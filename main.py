@@ -26,8 +26,38 @@ def white_1():
 
 
 def put(bit):
-    if bit == 1:
+    if bit == 0:
         red_0()
         while white == 1:
             a += 1
-        xyz = 3
+        red_1()
+        while white == 0:
+            a += 1
+
+    if bit == 1:
+        white_0()
+        while red == 1:
+            a += 1
+        white_1()
+        while red == 0:
+            a += 1
+
+def get():
+    while red == 0 and white == 0:
+        a += 1
+    
+    if red == 0:
+        bit = 0
+        white_0()
+        while red == 0:
+            a += 1
+        white_1()
+
+    if red == 1:
+        bit = 1
+        red_0()
+        while white == 0:
+            a += 1
+        red_1()
+        
+    return bit
