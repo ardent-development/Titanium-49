@@ -30,6 +30,9 @@ def set_red(state):
 #  - state: bool
 #  - returns: nothing
 def set_white(state):
+    if state != 0 and state != 1:
+        raise ValueError("State must be set to 0 or 1.")   
+
     if state == 0:
         white = machine.Pin(gpio_white, mode=machine.Pin.OUT, pull=machine.Pin.PULL_UP)
         white.off()
@@ -42,6 +45,9 @@ def set_white(state):
 #  - bit: bool
 #  - returns: nothing
 def put_bit(bit):
+    if bit != 0 and bit != 1:
+        raise ValueError("Bit must be set to 0 or 1.")    
+
     if bit == 0:
         set_red(0)
         while white.value() == 1:
@@ -49,7 +55,7 @@ def put_bit(bit):
         set_red(1)
         while white.value() == 0:
             pass
-
+    
     if bit == 1:
         set_white(0)
         while red.value() == 1:
@@ -116,6 +122,7 @@ put_bit(0)
 put_bit(0)
 put_bit(0)
 put_bit(0)
+
 
 set_red(1)
 set_white(1)
