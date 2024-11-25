@@ -19,6 +19,9 @@ white = machine.Pin(gpio_white, mode=machine.Pin.IN, pull=machine.Pin.PULL_UP)
 #  - state: bool
 #  - returns: nothing
 def set_red(state):
+    if state != 0 and state != 1:
+        raise ValueError("State must be set to 0 or 1.")    
+
     if state == 0:
         red = machine.Pin(gpio_red, mode=machine.Pin.OUT, pull=machine.Pin.PULL_UP)
         red.off()
@@ -31,7 +34,7 @@ def set_red(state):
 #  - returns: nothing
 def set_white(state):
     if state != 0 and state != 1:
-        raise ValueError("State must be set to 0 or 1.")   
+        raise ValueError("State must be set to 0 or 1.")
 
     if state == 0:
         white = machine.Pin(gpio_white, mode=machine.Pin.OUT, pull=machine.Pin.PULL_UP)
