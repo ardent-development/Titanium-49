@@ -7,7 +7,7 @@ import machine
 from time import *
 
 print("INIT: boot")
-machine.freq(270 * 1000 * 1000) # This level of OC causes no problems on every Pico board, and only speeds up the Python interpreter.
+machine.freq(280 * 1000 * 1000) # This level of OC causes no problems on every Pico board, and only speeds up the Python interpreter.
 led = machine.Pin("LED", machine.Pin.OUT)
 led.on() # Power indicator
 ticks = 0
@@ -76,7 +76,7 @@ def set_white(state):
 #  - bit: bool
 # returns: nothing
 def put_bit(bit):
-    global ticks # this function idles locally, and counts ticks
+    global ticks # this function idles, and counts ticks
     
     if bit != 0 and bit != 1:
         raise ValueError("Bit must be set to 0 or 1.")    
@@ -102,7 +102,7 @@ def put_bit(bit):
 #  - returns: bool containing the bit gotten from the link
 # returns: nothing
 def get_bit() -> bool:
-    global ticks # this function idles locally, and counts ticks
+    global ticks # this function idles, and counts ticks
     
     if red.value() == 0:
         bit = 0
@@ -142,8 +142,9 @@ def put_byte(byte):
 
 # get_byte(): gets a byte from the link
 # returns: a string containing two lowercase hexadecimal characters (the byte gotten) without a prefix
+@micropython.native # this helps a little when doing things like screenshotting (~100ms reduction in exec time)
 def get_byte():
-    global ticks # this function idles locally, and counts ticks
+    global ticks # this function idles, and counts ticks
     
     byte_str = ""
     while red.value() == 1 and white.value() == 1: # if the calc isn't ready to send another bit, don't try getting one!
@@ -167,8 +168,10 @@ put_byte("6d") # For testing purposes only.
 put_byte("00")
 put_byte("00")
 
+x = ticks_us()
 for i in range(3850):
     print(get_byte())
+y = ticks_us()
 
 put_byte("08") # This block is temporary.
 put_byte("56")
@@ -176,7 +179,7 @@ put_byte("00")
 put_byte("00")
 
 print()
-print(ticks)
+print(str((y-x)/1000) + "( + ticks: " + str(ticks) + " which is ~" + str(ticks*0.02) + "ms)")
 
 set_red(1)
 set_white(1)
