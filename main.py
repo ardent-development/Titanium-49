@@ -99,15 +99,13 @@ def put_bit(bit):
 #  - returns: bool containing the bit gotten from the link
 # returns: nothing
 def get_bit() -> bool:
-    while red.value() == 0 or white.value() == 0:
-        pass
-    
     if red.value() == 0:
         bit = 0
         set_white(0)
         while red.value() == 0:
             pass
         set_white(1)
+        return bit
 
     if red.value() == 1:
         bit = 1
@@ -115,27 +113,37 @@ def get_bit() -> bool:
         while white.value() == 0:
             pass
         set_red(1)
-        
-    return bit
+        return bit
 
 
 ## Bytewise I/O
 
-# put_byte(): sends a byte across the link (in little-endian order)
-#   - byte: a string containing a byte represented in hexadecimal - should only be 2 characters
+# put_byte(): sends a byte across the link in little-endian order
+#   - byte: a string containing a [padded if necessary] byte represented in hexadecimal - no prefix needed, should only be 2 characters
 # returns: nothing
 def put_byte(byte):
-    if len(byte) != 2: # only accepts one byte; more than 2 hex chars = >1B
+    if len(byte) != 2: # only accepts one byte; more than 2 hex chars = >1B; less than 2 means it must be padded with a 0
         raise ValueError("Only one byte is allowed. Single-char representable bytes must be padded with 0.")
 
     byte = reverse(bin(int(byte,16))[2:]) # Converts the hex to a string containing binary; then reverses it because the serial link is little-endian
     if len(byte) < 8:
-        for i in range(0,8-len(byte)):
-            byte = str(byte) + str("0") # pad the right side with zeros if it's less than 8 in length
+        for i in range(0,8-len(byte)): # pad the right side with zeros if it's less than 8 in length
+            byte = str(byte) + str("0")
     
     for each_bit in byte:
         each_bit = int(each_bit) # put_bit accepts numbers, not strings
         put_bit(each_bit)
+
+
+# get_byte(): gets a byte from the link
+# returns: a string containing two hexadecimal characters (the byte gotten) without a prefix
+def get_byte():
+    sleep_ms(1) # needed for the line to be "usable" again (idk tbh)
+    
+    for i in range(8):
+        res = get_bit()
+        print(res)
+    print()
 
 
 ##
@@ -149,7 +157,17 @@ put_byte("08") # This block is temporary.
 put_byte("87") # For testing purposes only.
 put_byte("31")
 put_byte("00")
+#sleep_ms(1)
+#for i in range(32):
+#    ab = get_bit()
+#    print(ab)
+#    #sleep_ms(10)
+get_byte()
+get_byte()
+get_byte()
+get_byte()
 
 
 set_red(1)
 set_white(1)
+
