@@ -1,0 +1,9 @@
+{
+  "files.associations": {
+    "firstline": "plaintext",
+    "firstlineraw": "plaintext",
+    "splitpoint": "plaintext",
+    "*.S": "arm",
+    "stdlib.h": "c"
+  }
+}
