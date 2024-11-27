@@ -1,4 +1,4 @@
-# Titanium-49 v0.0.4
+# Titanium-49 v0.0.5
 # Contributors to this file:
 #   - twisted_nematic57
 # Licensed under GNU GPLv3. See /LICENSE for more info.
@@ -55,7 +55,6 @@ def set_red(state):
         red.off()
     if state == 1:
         red = machine.Pin(gpio_red, mode=machine.Pin.IN, pull=machine.Pin.PULL_UP)
-        #red.on()
         
 # set_white(state): sets the white wire to a low (0) or high (1) state
 #  - state: bool
@@ -70,7 +69,6 @@ def set_white(state):
         white.off()
     if state == 1:
         white = machine.Pin(gpio_white, mode=machine.Pin.IN, pull=machine.Pin.PULL_UP)
-        #white.on()
 
 
 ## Bitwise I/O
@@ -189,5 +187,6 @@ print(str((y-x)/1000) + "( + ticks: " + str(ticks) + " which is ~" + str(ticks*0
 
 set_red(1)
 set_white(1)
+
 
 
