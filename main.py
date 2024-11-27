@@ -7,9 +7,10 @@ import machine
 from time import *
 
 print("INIT: boot")
-machine.freq(250000000) # This level of OC causes no problems on every Pico board, and only speeds up the Python interpreter.
+machine.freq(270 * 1000 * 1000) # This level of OC causes no problems on every Pico board, and only speeds up the Python interpreter.
 led = machine.Pin("LED", machine.Pin.OUT)
 led.on() # Power indicator
+ticks = 0
 
 gpio_red   = 14  # Modify these if needed.
 gpio_white = 15  # Any GPIO should work on the RP2040.
@@ -75,35 +76,39 @@ def set_white(state):
 #  - bit: bool
 # returns: nothing
 def put_bit(bit):
+    global ticks # this function idles locally, and counts ticks
+    
     if bit != 0 and bit != 1:
         raise ValueError("Bit must be set to 0 or 1.")    
 
     if bit == 0:
         set_red(0)
         while white.value() == 1:
-            pass
+            ticks += 1
         set_red(1)
         while white.value() == 0:
-            pass
+            ticks += 1
     
     if bit == 1:
         set_white(0)
         while red.value() == 1:
-            pass
+            ticks += 1
         set_white(1)
         while red.value() == 0:
-            pass
+            ticks += 1
 
 
 # get_bit(): gets a bit from the link
 #  - returns: bool containing the bit gotten from the link
 # returns: nothing
 def get_bit() -> bool:
+    global ticks # this function idles locally, and counts ticks
+    
     if red.value() == 0:
         bit = 0
         set_white(0)
         while red.value() == 0:
-            pass
+            ticks += 1
         set_white(1)
         return bit
 
@@ -111,7 +116,7 @@ def get_bit() -> bool:
         bit = 1
         set_red(0)
         while white.value() == 0:
-            pass
+            ticks += 1
         set_red(1)
         return bit
 
@@ -138,13 +143,16 @@ def put_byte(byte):
 # get_byte(): gets a byte from the link
 # returns: a string containing two lowercase hexadecimal characters (the byte gotten) without a prefix
 def get_byte():
-    sleep_us(480) # needed for the line to be "usable" again (idk tbh)
+    global ticks # this function idles locally, and counts ticks
+    
     byte_str = ""
+    while red.value() == 1 and white.value() == 1: # if the calc isn't ready to send another bit, don't try getting one!
+        ticks += 1
     
     for i in range(8):
-        byte_str = str(get_bit()) + byte_str # Get each bit of the byte and account for the little-endian nature of the link to format it into a big-endian string of 8 bits
-    #return hex(int(byte_str, 2))
+        byte_str = str(get_bit()) + byte_str # get each bit of the byte and account for the little-endian nature of the link to format it into a big-endian string of 8 bits
     return "{0:#0{1}x}".format(int(byte_str, 2),4)[-2:]
+    #return byte_str
 
 
 ##
@@ -167,6 +175,8 @@ put_byte("56")
 put_byte("00")
 put_byte("00")
 
+print()
+print(ticks)
 
 set_red(1)
 set_white(1)
