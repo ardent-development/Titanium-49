@@ -1,8 +1,7 @@
 /*** main.c *******************************************************************\
- * Contributors: Akshat Singh                                                 *
- * Copyright: MIT License (see LICENSE)                                       *
- * Description: Initializes hardware and sets things up for the GUI and web   *
- *              interface                                                     *
+ * Contributors: twisted_nematic57                                            *
+ * Copyright: GNU GPLv3 (see LICENSE)                                         *
+ * Description: Initializes hardware and sets things up external interfaces   *
 \******************************************************************************/
 
 #include "pico/stdlib.h"
