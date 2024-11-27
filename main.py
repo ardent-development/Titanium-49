@@ -136,14 +136,15 @@ def put_byte(byte):
 
 
 # get_byte(): gets a byte from the link
-# returns: a string containing two hexadecimal characters (the byte gotten) without a prefix
+# returns: a string containing two lowercase hexadecimal characters (the byte gotten) without a prefix
 def get_byte():
-    sleep_ms(1) # needed for the line to be "usable" again (idk tbh)
+    sleep_ms(5) # needed for the line to be "usable" again (idk tbh)
+    byte_str = ""
     
     for i in range(8):
-        res = get_bit()
-        print(res)
-    print()
+        byte_str = str(get_bit()) + byte_str # Get each bit of the byte and account for the little-endian nature of the link to format it into a big-endian string of 8 bits
+    #return hex(int(byte_str, 2))
+    return "{0:#0{1}x}".format(int(byte_str, 2),4)
 
 
 ##
@@ -162,10 +163,10 @@ put_byte("00")
 #    ab = get_bit()
 #    print(ab)
 #    #sleep_ms(10)
-get_byte()
-get_byte()
-get_byte()
-get_byte()
+print(get_byte())
+print(get_byte())
+print(get_byte())
+print(get_byte())
 
 
 set_red(1)
