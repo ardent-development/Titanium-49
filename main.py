@@ -7,7 +7,7 @@ import machine
 from time import *
 
 print("INIT: boot")
-machine.freq(280 * 1000 * 1000) # This level of OC causes no problems on every Pico board, and only speeds up the Python interpreter.
+machine.freq(280 * 1000 * 1000) # This level of OC causes no problems on every Pico board, and the speed is helpful.
 led = machine.Pin("LED", machine.Pin.OUT)
 led.on() # Power indicator
 ticks = 0
@@ -30,6 +30,7 @@ white = machine.Pin(gpio_white, mode=machine.Pin.IN, pull=machine.Pin.PULL_UP)
 #
 # Note: function stolen from https://forum.micropython.org/viewtopic.php?t=5282#p30290
 #  - Does not raise an exception if it is called wrongly. I could not figure out how to make it do that.
+@micropython.native
 def reverse(string):
     return "" if not(string) else reverse(string[1::]) + string[0]
 
@@ -44,6 +45,7 @@ def reverse(string):
 # set_red(state): sets the red wire to a low (0) or high (1) state
 #  - state: bool
 # returns: nothing
+@micropython.native
 def set_red(state):
     if state != 0 and state != 1:
         raise ValueError("State must be set to 0 or 1.")    
@@ -53,11 +55,12 @@ def set_red(state):
         red.off()
     if state == 1:
         red = machine.Pin(gpio_red, mode=machine.Pin.IN, pull=machine.Pin.PULL_UP)
-        red.on()
+        #red.on()
         
 # set_white(state): sets the white wire to a low (0) or high (1) state
 #  - state: bool
 # returns: nothing
+@micropython.native
 def set_white(state):
     if state != 0 and state != 1:
         raise ValueError("State must be set to 0 or 1.")
@@ -67,7 +70,7 @@ def set_white(state):
         white.off()
     if state == 1:
         white = machine.Pin(gpio_white, mode=machine.Pin.IN, pull=machine.Pin.PULL_UP)
-        white.on()
+        #white.on()
 
 
 ## Bitwise I/O
@@ -75,6 +78,7 @@ def set_white(state):
 # put_bit(bit): sends a bit across the link
 #  - bit: bool
 # returns: nothing
+@micropython.native
 def put_bit(bit):
     global ticks # this function idles, and counts ticks
     
@@ -101,6 +105,7 @@ def put_bit(bit):
 # get_bit(): gets a bit from the link
 #  - returns: bool containing the bit gotten from the link
 # returns: nothing
+@micropython.native
 def get_bit() -> bool:
     global ticks # this function idles, and counts ticks
     
@@ -126,6 +131,7 @@ def get_bit() -> bool:
 # put_byte(): sends a byte across the link in little-endian order
 #   - byte: a string containing a [padded if necessary] byte represented in hexadecimal - no prefix needed, should only be 2 characters
 # returns: nothing
+@micropython.native
 def put_byte(byte):
     if len(byte) != 2: # only accepts one byte; more than 2 hex chars = >1B; less than 2 means it must be padded with a 0
         raise ValueError("Only one byte is allowed. Single-char representable bytes must be padded with 0.")
@@ -142,7 +148,7 @@ def put_byte(byte):
 
 # get_byte(): gets a byte from the link
 # returns: a string containing two lowercase hexadecimal characters (the byte gotten) without a prefix
-@micropython.native # this helps a little when doing things like screenshotting (~100ms reduction in exec time)
+@micropython.native
 def get_byte():
     global ticks # this function idles, and counts ticks
     
