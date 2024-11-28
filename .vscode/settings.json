@@ -4,6 +4,7 @@
     "firstlineraw": "plaintext",
     "splitpoint": "plaintext",
     "*.S": "arm",
-    "stdlib.h": "c"
+    "stdlib.h": "c",
+    "cyw43_arch.h": "c"
   }
 }

@@ -6,9 +6,9 @@ set(CMAKE_C_COMPILER "arm-none-eabi-gcc")
 set(CMAKE_CXX_COMPILER "arm-none-eabi-g++")
 set(CMAKE_ASM_COMPILER "arm-none-eabi-gcc")
 
-project(t49_fw C CXX ASM)
-set(PICO_PLATFORM rp2040) # Developing on RPiPico-W, but will be deploying with
-set(PICO_BOARD pico_w)    # custom RP2350 board
+project(t49_fw C CXX ASM) # C++ not used
+set(PICO_PLATFORM rp2040)
+set(PICO_BOARD pico_w)
 set(PICO_NO_FLASH 0) # Run from flash, not SRAM
 
 set(CMAKE_C_STANDARD 23)
@@ -71,4 +71,7 @@ target_link_libraries(t49_fw
   hardware_clocks
  # tinyusb_device
  # tinyusb_board
+ # pico_cyw43_arch_lwip_threadsafe_background
+ # pico_lwip
+  pico_cyw43_arch_none
 )
