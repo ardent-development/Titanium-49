@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
 
-if(NOT DEFINED ENV{PICO_SDK_PATH})
-  message(FATAL_ERROR "$PICO_SDK_PATH environment variable is not defined.")
-endif()
-
 include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
 set(CMAKE_C_COMPILER "arm-none-eabi-gcc")
@@ -52,8 +48,6 @@ pico_sdk_init()
 include_directories(
   ${CMAKE_SOURCE_DIR}
   ${CMAKE_CURRENT_LIST_DIR}
-#  $ENV{PICO_SDK_PATH}/src/host/pico_platform/include
-#  $ENV{PICO_SDK_PATH}/src/common/pico_binary_info/include
 )
 
 add_executable(t49_fw
@@ -64,20 +58,19 @@ pico_set_program_name(t49_fw "t49_fw")
 pico_set_program_version(t49_fw "0.1")
 
 pico_enable_stdio_uart(t49_fw 1) # Default serial output configuration
-pico_enable_stdio_usb(t49_fw 0) # The product is meant to be used over USB, but
+pico_enable_stdio_usb(t49_fw 1) # The product is meant to be used over USB, but
                                 # plain UART at 8n1/115200b is also possible
 
 pico_add_extra_outputs(t49_fw)
 
 target_link_libraries(t49_fw
-  #pico_cyw43_arch_none
   pico_stdlib
   pico_unique_id
   hardware_gpio
   hardware_uart
   hardware_clocks
+  pico_time
+  pico_cyw43_arch_none
  # tinyusb_device
  # tinyusb_board
- # pico_cyw43_arch_lwip_threadsafe_background
- # pico_lwip
 )
