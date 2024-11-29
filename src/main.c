@@ -135,7 +135,6 @@ void put_byte(uint8_t byte) {
 // returns: a uint8_t containing the byte gotten
 uint8_t get_byte() {
 	uint8_t byte = 0b00000000;
-	uint8_t this_bit = 0b00000000;
 
 	for(uint8_t i = 7; i >= 0; i--) {
 		byte = byte | (get_bit() >> i);
