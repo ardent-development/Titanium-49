@@ -1,4 +1,4 @@
-# Titanium-49 v0.0.5
+# Titanium-49 v0.0.6
 # Contributors to this file:
 #   - twisted_nematic57
 # Licensed under GNU GPLv3. See /LICENSE for more info.
@@ -10,29 +10,12 @@ print("INIT: boot")
 machine.freq(280 * 1000 * 1000) # This level of OC causes no problems on every Pico board, and the speed is helpful.
 led = machine.Pin("LED", machine.Pin.OUT)
 led.on() # Power indicator
-ticks = 0
 
 gpio_red   = 14  # Modify these if needed.
 gpio_white = 15  # Any GPIO should work on the RP2040.
 
 red = machine.Pin(gpio_red, mode=machine.Pin.IN, pull=machine.Pin.PULL_UP)
 white = machine.Pin(gpio_white, mode=machine.Pin.IN, pull=machine.Pin.PULL_UP)
-
-
-
-##
-## Miscellaneous functions: filling holes in MicroPython
-##
-
-# reverse(string): reverses string
-#  - string: string to be reversed
-# returns: reversed string
-#
-# Note: function stolen from https://forum.micropython.org/viewtopic.php?t=5282#p30290
-#  - Does not raise an exception if it is called wrongly. I could not figure out how to make it do that.
-@micropython.native
-def reverse(string):
-    return "" if not(string) else reverse(string[1::]) + string[0]
 
 
 ##
@@ -47,9 +30,6 @@ def reverse(string):
 # returns: nothing
 @micropython.native
 def set_red(state):
-    if state != 0 and state != 1:
-        raise ValueError("State must be set to 0 or 1.")
-
     if state == 0:
         red = machine.Pin(gpio_red, mode=machine.Pin.OUT, pull=machine.Pin.PULL_UP)
         red.off()
@@ -61,9 +41,6 @@ def set_red(state):
 # returns: nothing
 @micropython.native
 def set_white(state):
-    if state != 0 and state != 1:
-        raise ValueError("State must be set to 0 or 1.")
-
     if state == 0:
         white = machine.Pin(gpio_white, mode=machine.Pin.OUT, pull=machine.Pin.PULL_UP)
         white.off()
@@ -78,50 +55,41 @@ def set_white(state):
 # returns: nothing
 @micropython.native
 def put_bit(bit):
-    global ticks # this function idles, and counts ticks
-
-    if bit != 0 and bit != 1:
-        raise ValueError("Bit must be set to 0 or 1.")
-
     if bit == 0:
         set_red(0)
         while white.value() == 1:
-            ticks += 1
+            pass
         set_red(1)
         while white.value() == 0:
-            ticks += 1
+            pass
 
     if bit == 1:
         set_white(0)
         while red.value() == 1:
-            ticks += 1
+            pass
         set_white(1)
         while red.value() == 0:
-            ticks += 1
+            pass
 
 
 # get_bit(): gets a bit from the link
 #  - returns: bool containing the bit gotten from the link
 # returns: nothing
-@micropython.native
+@micropython.viper
 def get_bit() -> bool:
-    global ticks # this function idles, and counts ticks
-
-    if red.value() == 0:
-        bit = 0
+    if int(red.value()) == 0:
         set_white(0)
-        while red.value() == 0:
-            ticks += 1
+        while int(red.value()) == 0:
+            pass
         set_white(1)
-        return bit
+        return False # 0
 
-    if red.value() == 1:
-        bit = 1
+    if int(red.value()) == 1:
         set_red(0)
-        while white.value() == 0:
-            ticks += 1
+        while int(white.value()) == 0:
+            pass
         set_red(1)
-        return bit
+        return True # 1
 
 
 ## Bytewise I/O
@@ -131,10 +99,7 @@ def get_bit() -> bool:
 # returns: nothing
 @micropython.native
 def put_byte(byte):
-    if len(byte) != 2: # only accepts one byte; more than 2 hex chars = >1B; less than 2 means it must be padded with a 0
-        raise ValueError("Only one byte is allowed. Single-char representable bytes must be padded with 0.")
-
-    byte = reverse(bin(int(byte,16))[2:]) # Converts the hex to a string containing binary; then reverses it because the serial link is little-endian
+    byte = ''.join(reversed(bin(int(byte,16))[2:])) # Converts the hex to a string containing binary; then reverses it because the serial link is little-endian
     if len(byte) < 8:
         for i in range(0,8-len(byte)): # pad the right side with zeros if it's less than 8 in length
             byte = str(byte) + str("0")
@@ -148,16 +113,14 @@ def put_byte(byte):
 # returns: a string containing two lowercase hexadecimal characters (the byte gotten) without a prefix
 @micropython.native
 def get_byte():
-    global ticks # this function idles, and counts ticks
-
     byte_str = ""
     while red.value() == 1 and white.value() == 1: # if the calc isn't ready to send another bit, don't try getting one!
-        ticks += 1
+        pass
 
     for i in range(8):
         byte_str = str(get_bit()) + byte_str # get each bit of the byte and account for the little-endian nature of the link to format it into a big-endian string of 8 bits
-    return "{0:#0{1}x}".format(int(byte_str, 2),4)[-2:]
-    #return byte_str
+    #return "{0:#0{1}x}".format(int(byte_str, 2),4)[-2:]
+    return byte_str
 
 
 ##
@@ -172,9 +135,14 @@ put_byte("6d") # For testing purposes only.
 put_byte("00")
 put_byte("00")
 
+@micropython.viper
+def geti():
+    for i in range(3850*8):
+        while int(red.value()) == 1 and int(white.value()) == 1:
+            pass
+        print(int(get_bit()),end="")
 x = ticks_us()
-for i in range(3850):
-    print(get_byte())
+geti()
 y = ticks_us()
 
 put_byte("08") # This block is temporary.
@@ -183,10 +151,7 @@ put_byte("00")
 put_byte("00")
 
 print()
-print(str((y-x)/1000) + "( + ticks: " + str(ticks) + " which is ~" + str(ticks*0.02) + "ms)")
+print(str((y-x)/1000) + "ms")
 
 set_red(1)
 set_white(1)
-
-
-
