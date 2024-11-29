@@ -24,7 +24,7 @@ bs2_*
 *.hex
 *.uf2
 elf2uf2
-src/*/pioasm
+src/pioasm*
 
 # Misc
 src/pico_flash_region.ld

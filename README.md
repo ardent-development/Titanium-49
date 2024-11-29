@@ -21,4 +21,5 @@ Originally this was being written in MicroPython, but it soon became clear that 
 ### Special Thanks
 
 * calc84maniac for helping to clear up some confusion about the bitwise getting routine
+* Timothy 'Geekboy1011' Keller for his [PIO-based project](https://github.com/geekbozu/PicoSilverLink) and some informational help
 * [Cemetech](https://cemetech.net) for being the welcoming one-stop shop for calculator development
