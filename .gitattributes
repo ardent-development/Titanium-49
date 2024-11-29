@@ -1,5 +1,0 @@
-*.S linguist-detectable=true
-*.sh linguist-detectable=true
-
-*.S linguist-language=Assembly
-*.sh linguist-language=Shell
