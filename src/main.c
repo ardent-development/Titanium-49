@@ -23,10 +23,7 @@
 #define GPIO_RED   14 // Modify pin numbers if needed
 #define GPIO_WHITE 15
 
-// Global Variables
-bool system_state[] = {0};
-/* Bit 0: if set, means wireless/onboard LED capabilities are unavailable
-*/
+#define true 1 // VSCode problem fixing
 
 
 //
@@ -57,10 +54,9 @@ uint8_t reverse(uint8_t b) {
 void set_red(bool state) {
   if(state == 0) {
     gpio_set_dir(GPIO_RED,1); // Output
-    gpio_pull_up(GPIO_RED);   // Pull up
     gpio_put(GPIO_RED,0);
   } else { // state == 1
-    gpio_set_dir(GPIO_RED,1); // Input
+    gpio_set_dir(GPIO_RED,0); // Input
     gpio_pull_up(GPIO_RED);   // Pull up
   }
 }
@@ -71,11 +67,10 @@ void set_red(bool state) {
 // returns: nothing
 void set_white(bool state) {
   if(state == 0) {
-    gpio_set_dir(GPIO_WHITE,1); // Output
-    gpio_pull_up(GPIO_WHITE);   // Pull up
+    gpio_set_dir(GPIO_WHITE,GPIO_OUT); // Output
     gpio_put(GPIO_WHITE,0);
   } else { // state == 1
-    gpio_set_dir(GPIO_WHITE,1); // Input
+    gpio_set_dir(GPIO_WHITE,GPIO_IN); // Input
     gpio_pull_up(GPIO_WHITE);   // Pull up
   }
 }
@@ -90,14 +85,14 @@ void set_white(bool state) {
 void put_bit(bool bit) {
   if(bit == 0) {
     set_red(0);
-    while(gpio_get(GPIO_WHITE) == 1) {} // Wait for other side to ack
+    while(gpio_get(GPIO_WHITE) == 1) {;} // Wait for other side to ack
     set_red(1);
-    while(gpio_get(GPIO_WHITE) == 0) {} // ^
+    while(gpio_get(GPIO_WHITE) == 0) {;} // ^
   } else { // bit == 1
     set_white(0);
-    while(gpio_get(GPIO_RED) == 1) {} // Wait for other side to ack
+    while(gpio_get(GPIO_RED) == 1) {;} // Wait for other side to ack
     set_white(1);
-    while(gpio_get(GPIO_RED) == 0) {} // ^
+    while(gpio_get(GPIO_RED) == 0) {;} // ^
   }
 }
 
@@ -107,13 +102,13 @@ bool get_bit() {
   if(gpio_get(GPIO_RED) == 0) {
     // Bit == 0
     set_white(0);
-    while(gpio_get(GPIO_RED) == 0) {} // Wait for other side to ack
+    while(gpio_get(GPIO_RED) == 0) {;} // Wait for other side to ack
     set_white(1);
     return 0;
   } else { // red == 1
     // Bit == 1
     set_red(0);
-    while(gpio_get(GPIO_WHITE) == 0) {} // Wait for other side to ack
+    while(gpio_get(GPIO_WHITE) == 0) {;} // Wait for other side to ack
     set_red(1);
     return 1;
   }
@@ -147,14 +142,13 @@ uint8_t get_byte() {
 
 int main() {
   set_sys_clock_hz(250*1000*1000, true); // need for speed
-  stdio_init_all(); // USB + UART
-  stdio_puts("\n\n\nINIT: Boot Titanium-49 v0.1.0 | Copyright 2024 Ardent"
+  stdio_init_all(); // USB + UART (8n1,115200)
+  stdio_puts("\n\n\nINIT: Boot Titanium-49 v0.2.0 | Copyright 2024 Ardent"
              " Development. Released under the GPLv3 or later.\n");
 
   if (cyw43_arch_init()) { // Try to init CYW43439
     stdio_puts("ERROR: CYW43439 init failed. Onboard LED capabilities shall be"
                " disabled.");
-    system_state[0] = 1; // Later on, we will not try to use this functionality.
   } else {
     stdio_puts("INIT: CYW43439 initialized. Infodump below.");
     cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1); /* Enable onboard LED (power
@@ -163,13 +157,47 @@ int main() {
   }
 
   gpio_init(GPIO_RED);        // Set up the I/O wires - Red
-  gpio_set_dir(GPIO_RED,0);
+  gpio_set_dir(GPIO_RED,GPIO_IN);
   gpio_pull_up(GPIO_RED);
   gpio_init(GPIO_WHITE);      // White
-  gpio_set_dir(GPIO_WHITE,0);
+  gpio_set_dir(GPIO_WHITE,GPIO_IN);
   gpio_pull_up(GPIO_WHITE);
 
+	set_red(1);
+	set_white(1);
 
+	put_bit(0); // 08
+	put_bit(0);
+	put_bit(0);
+	put_bit(1);
+	put_bit(0);
+	put_bit(0);
+	put_bit(0);
+	put_bit(0);
+	put_bit(1); // 87
+	put_bit(1);
+	put_bit(1);
+	put_bit(0);
+	put_bit(0);
+	put_bit(0);
+	put_bit(0);
+	put_bit(1);
+	put_bit(1); // 31
+	put_bit(0);
+	put_bit(0);
+	put_bit(0);
+	put_bit(1);
+	put_bit(1);
+	put_bit(0);
+	put_bit(0);
+	put_bit(0); // 00
+	put_bit(0);
+	put_bit(0);
+	put_bit(0);
+	put_bit(0);
+	put_bit(0);
+	put_bit(0);
+	put_bit(0);
 
 	return 0;
 }
