@@ -1,4 +1,4 @@
-# Titanium-49 v0.0.7
+# Titanium-49 v0.0.8
 # Contributors to this file:
 #   - twisted_nematic57
 # Licensed under GNU GPLv3. See /LICENSE for more info.
@@ -6,10 +6,11 @@
 import machine
 from time import *
 
-print("INIT: boot")
-machine.freq(280 * 1000 * 1000) # This level of OC should cause no problems on every Pico board, and the speed is helpful.
+print("T49 INIT: boot")
+machine.freq(125 * 1000 * 1000) # Initial low clock due to wireless chip-connected power indicator shenanigans
 led = machine.Pin("LED", machine.Pin.OUT)
 led.on() # Power indicator
+machine.freq(280 * 1000 * 1000) # Now that the wireless chip is out of the way...
 
 gpio_red   = 14  # Modify these if needed.
 gpio_white = 15  # Any GPIO should work on the RP2040.
