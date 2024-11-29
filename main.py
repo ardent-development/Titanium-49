@@ -1,4 +1,4 @@
-# Titanium-49 v0.0.6
+# Titanium-49 v0.0.7
 # Contributors to this file:
 #   - twisted_nematic57
 # Licensed under GNU GPLv3. See /LICENSE for more info.
@@ -7,7 +7,7 @@ import machine
 from time import *
 
 print("INIT: boot")
-machine.freq(280 * 1000 * 1000) # This level of OC causes no problems on every Pico board, and the speed is helpful.
+machine.freq(280 * 1000 * 1000) # This level of OC should cause no problems on every Pico board, and the speed is helpful.
 led = machine.Pin("LED", machine.Pin.OUT)
 led.on() # Power indicator
 
@@ -73,9 +73,8 @@ def put_bit(bit):
 
 
 # get_bit(): gets a bit from the link
-#  - returns: bool containing the bit gotten from the link
-# returns: nothing
-@micropython.viper
+# returns: bool containing the bit gotten from the link
+@micropython.viper # Repeatedly called thousands of times in screenshotting function. Absolute performance is of the essence.
 def get_bit() -> bool:
     if int(red.value()) == 0:
         set_white(0)
@@ -118,13 +117,12 @@ def get_byte():
         pass
 
     for i in range(8):
-        byte_str = str(get_bit()) + byte_str # get each bit of the byte and account for the little-endian nature of the link to format it into a big-endian string of 8 bits
-    #return "{0:#0{1}x}".format(int(byte_str, 2),4)[-2:]
-    return byte_str
+        byte_str = str(int(get_bit())) + byte_str # get each bit of the byte and account for the little-endian nature of the link to format it into a big-endian string of 8 bits
+    return "{0:#0{1}x}".format(int(byte_str, 2),4)[-2:]
 
 
 ##
-## Titanium-49 specific logic begins here
+## Titanium-49 logic begins here
 ##
 
 set_red(1)
@@ -137,7 +135,7 @@ put_byte("00")
 
 @micropython.viper
 def geti():
-    for i in range(3850*8):
+    for i in range(30800):
         while int(red.value()) == 1 and int(white.value()) == 1:
             pass
         print(int(get_bit()),end="")
