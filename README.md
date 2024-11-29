@@ -1,6 +1,6 @@
 # Titanium-49
 
-Capture your TI-89 Titanium's screen and send keypresses from your computer with this Raspberry Pi Pico W-based device.
+Capture your TI-89 Titanium's screen and send keypresses from your computer with this Raspberry Pi Pico (W)-based device.
 
 At the moment this project is fairly bespoke and cannot transfer programs, apps, or upgrade the OS. It can *only* remotely control the calculator and capture screenshots. [As of the latest commit, this functionality is still WIP.]
 
