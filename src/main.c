@@ -7,7 +7,6 @@
 
 
 // Includes
-
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 
@@ -20,15 +19,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-
 // Defines
-
 #define GPIO_RED   14 // Modify pin numbers if needed
 #define GPIO_WHITE 15
 
-
 // Global Variables
-
 bool system_state[] = {0};
 /* Bit 0: if set, means wireless/onboard LED capabilities are unavailable
 */
