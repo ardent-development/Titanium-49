@@ -12,7 +12,7 @@ The creator of the project sometimes found a need to get screenshots of their TI
 
 It is called Titanium-49 because "TI-89 **Titanium**" and half of 8 is 4. I didn't bother to divide the 9 by 2 because that's a non-integer and Titanium-44.5 sounds weird. As you can tell, not much thought went into naming this project.
 
-Originally this was being written in MicroPython, but it soon became clear that the speed limitations of the interpreter would hinder the project's ability to be faster than TI-Connect, an old, antiquated application that has very bad responsiveness. The link only worked at 6.9Kbit/s: A screenshot took more than 4 seconds to get, even after removing all safety checks and turning to ugly code structures to try and boost performance. It became clear that it was best to turn to C. It was not a very big deal, however, because only the bare basics had been implemented by that point in Python anyway.
+A rewrite was attempted in C in the name of increasing performance, but that endeavor was unsuccessful and the project was switched back to MicroPython.
 
 ## Credits
 
