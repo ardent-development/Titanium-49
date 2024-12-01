@@ -58,21 +58,22 @@
         const imageData = context.createImageData(canvas.width, canvas.height);
         const pixels = imageData.data;
 
-        const dat = new Uint8Array([97,10]);
+        const dat = new Uint8Array([97,10]); // a\n
         await writer.write(dat);
-        writer.releaseLock();
-        in_dat = new Uint8Array([]);
+        let in_dat = new Uint8Array([]);
+        const ack = new Uint8Array([99,10]); // c\n
 
         while(true) {
           const { value, done } = await reader.read();
           if(value[value.length - 1] === 10) {
             reader.releaseLock();
             console.log("done reading");
-            let in_dat = value;
+            in_dat = value;
             console.log(in_dat.length);
             break;
           } else {
             console.log("reading...");
+            writer.write(ack)
           }
         }
 
