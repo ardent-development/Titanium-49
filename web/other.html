@@ -52,10 +52,31 @@
 
         const decoder = new TextDecoder();
         const reader = port.readable.getReader();
+        const writer = port.writable.getWriter()
 
         let receivedData = "";
         const imageData = context.createImageData(canvas.width, canvas.height);
         const pixels = imageData.data;
+
+        const dat = new Uint8Array([97,10]);
+        await writer.write(dat);
+        writer.releaseLock();
+        in_dat = new Uint8Array([]);
+
+        while(true) {
+          const { value, done } = await reader.read();
+          if(value[value.length - 1] === 10) {
+            reader.releaseLock();
+            console.log("done reading");
+            let in_dat = value;
+            console.log(in_dat.length);
+            break;
+          } else {
+            console.log("reading...");
+          }
+        }
+
+        console.log(in_dat);
 
         for (let row = 0; row < canvas.height; row++) {
           for (let col = 0; col < canvas.width; col++) {
@@ -71,7 +92,7 @@
         context.putImageData(imageData, 0, 0);
 
 
-        //await port.close();
+        await port.close();
         console.log("Connection closed.");
         connectButton.textContent = "Connect to USB Serial Device";
       });
