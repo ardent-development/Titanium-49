@@ -5,6 +5,7 @@
 
 import machine
 import rp2
+import sys
 from time import *
 
 print("T49 INIT: boot")
@@ -18,6 +19,20 @@ gpio_white = 15  # Any GPIO should work on the RP2040.
 
 red = machine.Pin(gpio_red, mode=machine.Pin.IN, pull=machine.Pin.PULL_UP)
 white = machine.Pin(gpio_white, mode=machine.Pin.IN, pull=machine.Pin.PULL_UP)
+
+
+##
+## Miscellaneous functions: filling holes in MicroPython
+##
+
+# reverse(string): reverses string
+#  - string: string to be reversed
+# returns: reversed string
+#
+# Note: function stolen from https://forum.micropython.org/viewtopic.php?t=5282#p30290
+#  - Does not raise an exception if it is called wrongly. I could not figure out how to make it do that.
+def reverse(string):
+    return "" if not(string) else reverse(string[1::]) + string[0]
 
 
 ##
@@ -120,7 +135,8 @@ def get_byte():
 
     for i in range(8):
         byte_str = str(int(get_bit())) + byte_str # get each bit of the byte and account for the little-endian nature of the link to format it into a big-endian string of 8 bits
-    return "{0:#0{1}x}".format(int(byte_str, 2),4)[-2:]
+    #return "{0:#0{1}x}".format(int(byte_str, 2),4)[-2:]
+    return byte_str
 
 
 ##
@@ -129,10 +145,13 @@ def get_byte():
 
 @micropython.viper
 def geti():
-    for i in range(30800):
-        while int(red.value()) == 1 and int(white.value()) == 1:
+    for i in range(3850):
+#        while int(red.value()) == 1 and int(white.value()) == 1:
+#            pass
+#        print(int(get_bit()),end="")
+        print(get_byte(),end="")
+        while sys.stdin.readline() != "c\n":
             pass
-        print(int(get_bit()),end="")
 
 
 
@@ -141,7 +160,7 @@ set_white(1)
 
 
 while True:
-    if rp2.bootsel_button() == 1:
+    if sys.stdin.readline() == "a\n":
         put_byte("08") # This block is temporary.
         put_byte("6d") # For testing purposes only.
         put_byte("00")
@@ -156,8 +175,9 @@ while True:
         put_byte("00")
         put_byte("00")
 
-        print()
-        print(str((y-x)/1000) + "ms")
+        #print()
+        #print(str((y-x)/1000) + "ms")
+        print("")
 
 set_red(1)
 set_white(1)

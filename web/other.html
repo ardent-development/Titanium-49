@@ -30,7 +30,7 @@
   </head>
   <body>
     <button id="connectButton">Connect to USB Serial Device</button>
-    <canvas id="tiCanvas" width="160" height="100"></canvas>
+    <canvas id="tiCanvas" width="240" height="128"></canvas>
 
     <script>
       const canvas = document.getElementById("tiCanvas");
@@ -58,36 +58,67 @@
         const imageData = context.createImageData(canvas.width, canvas.height);
         const pixels = imageData.data;
 
-        const dat = new Uint8Array([97,10]); // a\n
+        const dat = new Uint8Array([97, 10]); // a\n
         await writer.write(dat);
-        let in_dat = new Uint8Array([]);
-        const ack = new Uint8Array([99,10]); // c\n
+        let buffer = new Uint8Array([]);
+        const ack = new Uint8Array([99, 10]); // c\n
 
-        while(true) {
-          const { value, done } = await reader.read();
-          if(value[value.length - 1] === 10) {
-            reader.releaseLock();
-            console.log("done reading");
-            in_dat = value;
-            console.log(in_dat.length);
-            break;
-          } else {
-            console.log("reading...");
-            writer.write(ack)
+        try {
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) {
+              break; // End of stream.
+            }
+            if (value) {
+              // Append new data to the buffer.
+              const tempBuffer = new Uint8Array(buffer.length + value.length);
+              tempBuffer.set(buffer);
+              tempBuffer.set(value, buffer.length);
+              buffer = tempBuffer;
+
+              // Check for the newline character to finish reading.
+              if (value[value.length - 1] === 10) {
+                console.log("done reading");
+                console.log(buffer.length);
+                break;
+              } else {
+                //console.log("reading...");
+                await writer.write(ack); // Send acknowledgment.
+              }
+            }
           }
+        } catch (err) {
+          console.error("Error during communication:", err);
+        } finally {
+          reader.releaseLock();
+          writer.releaseLock();
         }
 
-        console.log(in_dat);
+        buffer = buffer.slice(64, buffer.length - 18);
+        console.log(buffer);
 
+        let px_num = 0;
         for (let row = 0; row < canvas.height; row++) {
+          //console.log("I am valid.");
           for (let col = 0; col < canvas.width; col++) {
             const pixelIndex = (row * canvas.width + col) * 4; // Calculate the pixel index in the data array
 
-            // Set to black (R=0, G=0, B=0, A=255)
-            pixels[pixelIndex] = 0;     // Red
-            pixels[pixelIndex + 1] = 0; // Green
-            pixels[pixelIndex + 2] = 0; // Blue
-            pixels[pixelIndex + 3] = 255; // Alpha
+            //console.log(buffer[px_num]);
+            if(buffer[px_num] === 48) {
+              // Set to white
+              pixels[pixelIndex] = 255;     // Red
+              pixels[pixelIndex + 1] = 255; // Green
+              pixels[pixelIndex + 2] = 255; // Blue
+              pixels[pixelIndex + 3] = 255; // Alpha
+            } else {
+              // Set to black
+              pixels[pixelIndex] = 0;     // Red
+              pixels[pixelIndex + 1] = 0; // Green
+              pixels[pixelIndex + 2] = 0; // Blue
+              pixels[pixelIndex + 3] = 255; // Alpha
+            }
+
+            px_num++;
           }
         }
         context.putImageData(imageData, 0, 0);
