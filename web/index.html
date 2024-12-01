@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>USB Serial Screenshot Viewer</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0;
+      }
+      canvas {
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        border: 1px solid #000;
+        margin-top: 10px;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="connectButton">Connect to USB Serial Device</button>
+    <canvas id="tiCanvas" width="160" height="100"></canvas>
+
+    <script>
+      const canvas = document.getElementById("tiCanvas");
+      const context = canvas.getContext("2d");
+
+      const scale = 3; // Make it easier to see
+      canvas.style.width = `${canvas.width * scale}px`;
+      canvas.style.height = `${canvas.height * scale}px`;
+      context.imageSmoothingEnabled = false; // Ew
+
+      const connectButton = document.getElementById("connectButton");
+
+      connectButton.addEventListener("click", async () => {
+        try {
+          const port = await navigator.serial.requestPort();
+          await port.open({ baudRate: 115200 });
+
+          console.log("Connected to USB Serial Device");
+          connectButton.textContent = "Connected. Getting screenshot...";
+
+          const decoder = new TextDecoder();
+          const reader = port.readable.getReader();
+
+          let receivedData = "";
+          const imageData = context.createImageData(canvas.width, canvas.height);
+          const pixels = imageData.data;
+
+          for (let row = 0; row < canvas.height; row++) {
+            for (let col = 0; col < canvas.width; col++) {
+              // Read one character from the serial port
+              const { value, done } = await reader.read();
+              if (done) {
+                console.log("End of data");
+                return; // Exit if no more data
+              }
+
+              const char = decoder.decode(value); // Decode the ASCII character
+              const pixelIndex = (row * canvas.width + col) * 4; // Calculate the pixel index in the data array
+
+              if (char === '1') {
+                // Set to black (R=0, G=0, B=0, A=255)
+                pixels[pixelIndex] = 0;     // Red
+                pixels[pixelIndex + 1] = 0; // Green
+                pixels[pixelIndex + 2] = 0; // Blue
+                pixels[pixelIndex + 3] = 255; // Alpha
+              } else if (char === '0') {
+                // Set to white (R=255, G=255, B=255, A=255)
+                pixels[pixelIndex] = 255;     // Red
+                pixels[pixelIndex + 1] = 255; // Green
+                pixels[pixelIndex + 2] = 255; // Blue
+                pixels[pixelIndex + 3] = 255; // Alpha
+              }
+
+              // Immediately update the canvas with the current pixel data
+              context.putImageData(imageData, 0, 0);
+            }
+          }
+
+
+          await port.close();
+          console.log("Connection closed.");
+          connectButton.textContent = "Connect to USB Serial Device";
+        } catch (err) {
+          console.error("Error:", err);
+          alert("Failed to connect to the device. Check console for details.");
+        }
+      });
+    </script>
+  </body>
+</html>

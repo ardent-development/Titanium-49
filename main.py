@@ -4,6 +4,7 @@
 # Licensed under GNU GPLv3. See /LICENSE for more info.
 
 import machine
+import rp2
 from time import *
 
 print("T49 INIT: boot")
@@ -126,31 +127,37 @@ def get_byte():
 ## Titanium-49 logic begins here
 ##
 
-set_red(1)
-set_white(1)
-
-put_byte("08") # This block is temporary.
-put_byte("6d") # For testing purposes only.
-put_byte("00")
-put_byte("00")
-
 @micropython.viper
 def geti():
     for i in range(30800):
         while int(red.value()) == 1 and int(white.value()) == 1:
             pass
         print(int(get_bit()),end="")
-x = ticks_us()
-geti()
-y = ticks_us()
 
-put_byte("08") # This block is temporary.
-put_byte("56")
-put_byte("00")
-put_byte("00")
 
-print()
-print(str((y-x)/1000) + "ms")
+
+set_red(1)
+set_white(1)
+
+
+while True:
+    if rp2.bootsel_button() == 1:
+        put_byte("08") # This block is temporary.
+        put_byte("6d") # For testing purposes only.
+        put_byte("00")
+        put_byte("00")
+        
+        x = ticks_us()
+        geti()
+        y = ticks_us()
+
+        put_byte("08") # This block is temporary.
+        put_byte("56")
+        put_byte("00")
+        put_byte("00")
+
+        print()
+        print(str((y-x)/1000) + "ms")
 
 set_red(1)
 set_white(1)
